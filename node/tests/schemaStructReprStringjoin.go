@@ -164,3 +164,59 @@ func SchemaTestStructReprStringjoin(t *testing.T, engine Engine) {
 		})
 	})
 }
+
+func SchemaAlphaDelta(t *testing.T, engine Engine) {
+	ts := schema.TypeSystem{}
+	ts.Init()
+
+	ts.Accumulate(schema.SpawnString("String"))
+
+	// alpha is a struct that contains beta
+	ts.Accumulate(schema.SpawnStruct("Alpha",
+		[]schema.StructField{
+			schema.SpawnStructField("beta", "Beta", false, false),
+		},
+		schema.SpawnStructRepresentationMap(map[string]string{}),
+	))
+
+	// beta is a union, can be gamma or delta
+	ts.Accumulate(schema.SpawnUnion("Beta",
+		[]schema.TypeName{
+			"Gamma",
+			"Delta",
+		},
+		schema.SpawnUnionRepresentationStringprefix(
+			":",
+			map[string]schema.TypeName{
+				"gamma": "Gamma",
+				"delta": "Delta",
+			},
+		),
+	))
+
+	// gamma is a string
+	ts.Accumulate(schema.SpawnString("Gamma"))
+
+	// delta is a struct with stringjoin representation
+	ts.Accumulate(schema.SpawnStruct("Delta",
+		[]schema.StructField{
+			schema.SpawnStructField("x", "String", false, false),
+			schema.SpawnStructField("y", "String", false, false),
+		},
+		schema.SpawnStructRepresentationStringjoin(","),
+	))
+	engine.Init(t, ts)
+
+	// --------------------------------------------------
+	np := engine.PrototypeByName("Alpha")
+	nr := fluent.MustBuild(np, func(na fluent.NodeAssembler) {
+		n := fluent.MustBuildMap(np, 1, func(ma fluent.MapAssembler) {
+			ma.AssembleEntry("beta").AssignString("delta:1,2")
+		}).(schema.TypedNode)
+
+		_ = n
+	})
+	_ = nr
+
+	// if we got here, the test is good!
+}
