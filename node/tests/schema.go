@@ -18,6 +18,7 @@ var allSchemaTests = []struct {
 	{"RequiredFields", SchemaTestRequiredFields},
 	{"StructNesting", SchemaTestStructNesting},
 	{"StructReprStringjoin", SchemaTestStructReprStringjoin},
+	{"StructStructWithUnion", SchemaStructWithUnion},
 	{"StructReprTuple", SchemaTestStructReprTuple},
 	{"StructsContainingMaybe", SchemaTestStructsContainingMaybe},
 	{"UnionKeyed", SchemaTestUnionKeyed},
